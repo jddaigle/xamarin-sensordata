@@ -15,6 +15,9 @@ using Android.App;
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 [assembly: ComVisible(false)]
+[assembly: UsesPermission("Manifest.Permission.AccessFineLocation")]
+[assembly: UsesPermission("Manifest.Permission.AccessCoarseLocation")]
+
 
 // Version information for an assembly consists of the following four values:
 //

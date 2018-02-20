@@ -15,8 +15,12 @@ namespace MotionDetector
         SensorManager _sensorManager;
         TextView _sensorTextView;
         TextView _sensorGyroscopeTextView;
+        TextView _sensorMagnetoMeterTextView;
+        TextView _sensorGeomagneticRotationVectorTextView;
         string accelerometer = string.Empty;
         string gyroscope = string.Empty;
+        string magnetometer = string.Empty;
+        string geomagneticvector = string.Empty;
         protected override void OnCreate(Bundle bundle)
         {
             base.OnCreate(bundle);
@@ -24,6 +28,8 @@ namespace MotionDetector
             _sensorManager = (SensorManager)GetSystemService(Context.SensorService);
             _sensorTextView = FindViewById<TextView>(Resource.Id.accelerometer_text);
             _sensorGyroscopeTextView = FindViewById<TextView>(Resource.Id.gyroscope_text);
+            _sensorMagnetoMeterTextView = FindViewById<TextView>(Resource.Id.magnetometer_text);
+            _sensorGeomagneticRotationVectorTextView = FindViewById<TextView>(Resource.Id.geomagneticrotationvector_text);
             Button pauseButton = FindViewById<Button>(Resource.Id.PauseButton);
             Button resumeButton = FindViewById<Button>(Resource.Id.ResumeButton);
             Button shareButton = FindViewById<Button>(Resource.Id.Share);
@@ -55,12 +61,22 @@ namespace MotionDetector
                 if (e.Sensor.Type == SensorType.Accelerometer)
                 {
                     _sensorTextView.Text = string.Format("x={0:f}, y={1:f}, z={2:f}", e.Values[0], e.Values[1], e.Values[2]);
-                    accelerometer+= string.Format("x={0:f}, y={1:f}, z={2:f}", e.Values[0], e.Values[1], e.Values[2]);
+                    accelerometer+= string.Format("{0:f};{1:f};{2:f}", e.Values[0], e.Values[1], e.Values[2]);
+                }
+                if (e.Sensor.Type == SensorType.MagneticField)
+                {
+                    _sensorMagnetoMeterTextView.Text = string.Format("x={0:f}, y={1:f}, z={2:f}", e.Values[0], e.Values[1], e.Values[2]);
+                    magnetometer += string.Format("{0:f};{1:f};{2:f}", e.Values[0], e.Values[1], e.Values[2]);
                 }
                 if (e.Sensor.Type == SensorType.Gyroscope)
                 {
                     _sensorGyroscopeTextView.Text = string.Format("x={0:f}, y={1:f}, z={2:f}", e.Values[0], e.Values[1], e.Values[2]);
-                    gyroscope+= string.Format("x={0:f}, y={1:f}, z={2:f}", e.Values[0], e.Values[1], e.Values[2]);
+                    gyroscope+= string.Format("{0:f};{1:f};{2:f}", e.Values[0], e.Values[1], e.Values[2]);
+                }
+                if (e.Sensor.Type == SensorType.GeomagneticRotationVector)
+                {
+                    _sensorGeomagneticRotationVectorTextView.Text = string.Format("x={0:f}, y={1:f}, z={2:f}", e.Values[0], e.Values[1], e.Values[2]);
+                    gyroscope += string.Format("{0:f};{1:f};{2:f}", e.Values[0], e.Values[1], e.Values[2]);
                 }
             }
 
@@ -75,7 +91,13 @@ namespace MotionDetector
             _sensorManager.RegisterListener(this,
                                             _sensorManager.GetDefaultSensor(SensorType.Gyroscope),
                                             SensorDelay.Ui);
-            
+            _sensorManager.RegisterListener(this,
+                                  _sensorManager.GetDefaultSensor(SensorType.MagneticField),
+                                  SensorDelay.Ui);
+            _sensorManager.RegisterListener(this,  
+                      _sensorManager.GetDefaultSensor(SensorType.GeomagneticRotationVector),
+                      SensorDelay.Ui);
+
         }
         protected override void OnPause()
         {
@@ -106,7 +128,7 @@ namespace MotionDetector
             var intent = new Intent(Intent.ActionSend);
             Intent sendIntent = new Intent();
             sendIntent.SetAction(Intent.ActionSend);
-            sendIntent.PutExtra(Intent.ExtraText, DateTime.UtcNow+ "/n"+ "accelerometer: "+ accelerometer+ "/n" + " gyroscope:" + gyroscope);
+            sendIntent.PutExtra(Intent.ExtraText, DateTime.UtcNow+ "/n"+ "accelerometer: "+ accelerometer+ "/n" + " gyroscope:" + gyroscope + "/n" + " magnetometer:" + magnetometer + "/n" + " geomagneticvector:" + geomagneticvector);
             sendIntent.SetType("text/plain");
             StartActivity(Intent.CreateChooser(sendIntent, "Send email"));
             accelerometer = string.Empty;
